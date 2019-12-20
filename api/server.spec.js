@@ -1,51 +1,16 @@
 const request = require("supertest");
-const server = require("./server");
-const db = require("../database/dbConfig");
-const { add } = require("../auth/auth-model");
+const server = require("../api/server");
 
-it("should set db environment to testing", function() {
-  expect(process.env.DB_ENV).toBe("testing");
-});
-
-describe("server", function() {
-  describe("GET /", function() {
-    it(`should return 'server is up and running `, function() {
-      return request(server)
-        .get("/")
-        .then(res => {
-          expect(res.status).toBe(200);
-        });
-    });
-  });
-});
-
-describe("server", function() {
-  describe("GET /", function() {
-    it("should return all users", function() {
-      return request(server)
-        .get("/")
-        .then(res => {
-          expect(res.status).toBe(200);
-        });
-    });
-  });
-});
-
-describe("server", function() {
-  describe("GET /", function() {
-    it("should return a status of 400 cannot pass", function() {
+describe("server", () => {
+  describe("GET /jokes", () => {
+    it("should return 401 no creds", () => {
       return request(server)
         .get("/api/jokes")
         .then(res => {
-          expect(res.status).toBe(400);
+          expect(res.status).toBe(401);
         });
     });
-  });
-});
-
-describe("server", function() {
-  describe("GET /", function() {
-    it("should return a json format", function() {
+    it("should return JSON data", () => {
       return request(server)
         .get("/api/jokes")
         .then(res => {
@@ -53,70 +18,37 @@ describe("server", function() {
         });
     });
   });
-});
-
-describe("server", function() {
-  describe("POST /", function() {
-    it(`should return text formatted response `, function() {
+  describe("POST /register", () => {
+    it("should return 200 OK", () => {
       return request(server)
         .post("/api/auth/register")
+        .send({ username: "aaa", password: "aaa" })
         .then(res => {
-          expect(res.type).toMatch(/text/i);
+          expect(res.status).toBe(201);
         });
     });
-  });
-});
-
-describe("server", function() {
-  describe("POST /api/auth/register", function() {
-    it("should return a body with empty bracket", function() {
+    it("should return JSON data", () => {
       return request(server)
         .post("/api/auth/register")
+        .send({ username: "bob", password: "bob" })
         .then(res => {
-          expect(res.body).toEqual({});
+          expect(res.type).toMatch(/json/i);
         });
     });
   });
-});
-
-describe("add user", () => {
-  beforeEach(async () => {
-    await db("users").truncate();
-  });
-  it("inserts a user into the db", async () => {
-    let user;
-    user = await db("users");
-    await add({
-      username: "Susan",
-      password: "5678"
-    });
-    await add({
-      username: "nicholas",
-      password: "0954"
-    });
-    await add({
-      username: "Jordan",
-      password: "1234"
-    });
-    user = await db("users");
-    expect(user).toHaveLength(1);
-  });
-});
-describe("server", function() {
-  describe("POST /login", function() {
-    it("should get a list of user", function() {
+  describe("POST /login", () => {
+    it("should return 200 OK", () => {
       return request(server)
         .post("/api/auth/login")
-        .send({ username: "Susan", password: "5678" })
-        .send({ username: "nicholas", password: "0954" })
-        .send({ username: "Jordan", password: "1234" })
+        .send({ username: "bob", password: "bob" })
         .then(res => {
-          expect(res.status).toBe(401);
+          expect(res.status).toBe(200);
         });
     });
-    it("should return JSON formatted response", function() {
+    it("should return JSON data", () => {
       return request(server)
         .post("/api/auth/login")
+        .send({ username: "bob", password: "bob" })
         .then(res => {
           expect(res.type).toMatch(/json/i);
         });
